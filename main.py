@@ -37,7 +37,7 @@ RESULTS_PATH = "last_results.json"
 SECTOR_TICKERS = ["XLF", "XLK", "XLV", "XLI", "XLB", "XLE", "XLU", "XLY", "XLP", "XLC", "XLRE"]
 
 engine = StockDataEngine(db_path=DB_PATH)
-scheduler = AsyncIOScheduler(timezone="US/Eastern")
+scheduler = AsyncIOScheduler(timezone="America/New_York")
 
 _bot = None
 last_results: list[dict] = []
@@ -283,13 +283,13 @@ async def my_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
 def setup_scheduler():
     scheduler.add_job(
         scheduled_full_update,
-        CronTrigger(day_of_week="sun", hour=20, minute=0, timezone="US/Eastern"),
+        CronTrigger(day_of_week="sun", hour=20, minute=0, timezone="America/New_York"),
         id="weekly_full_update",
         replace_existing=True,
     )
     scheduler.add_job(
         scheduled_daily_scan,
-        CronTrigger(day_of_week="mon-fri", hour=16, minute=30, timezone="US/Eastern"),
+        CronTrigger(day_of_week="mon-fri", hour=16, minute=30, timezone="America/New_York"),
         id="daily_delta_scan",
         replace_existing=True,
     )
