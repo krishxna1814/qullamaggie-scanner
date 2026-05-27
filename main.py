@@ -31,9 +31,9 @@ ALLOWED_USER_IDS = [
     int(x.strip()) for x in os.getenv("ALLOWED_USER_IDS", "").split(",") if x.strip()
 ]
 
-DB_PATH = "/data/stocks.db"
-UNIVERSE_PATH = "/data/universe.csv"
-RESULTS_PATH = "/data/last_results.json"
+DB_PATH = "stocks.db"
+UNIVERSE_PATH = "universe.csv"
+RESULTS_PATH = "last_results.json"
 SECTOR_TICKERS = ["XLF", "XLK", "XLV", "XLI", "XLB", "XLE", "XLU", "XLY", "XLP", "XLC", "XLRE"]
 
 engine = StockDataEngine(db_path=DB_PATH)

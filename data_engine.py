@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS daily_data (
 """
 
 class StockDataEngine:
-    def __init__(self, db_path: str = "/data/stocks.db"):
+    def __init__(self, db_path: str = "stocks.db"):
         self.db_path = db_path
         self._init_db()
 
