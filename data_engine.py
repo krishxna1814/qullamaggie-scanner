@@ -1,14 +1,34 @@
 import sqlite3
 import logging
 import time
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeout
 
 import pandas as pd
 import yfinance as yf
 
-CHUNK_SIZE = 100
-SLEEP_BETWEEN_CHUNKS = 2
+CHUNK_SIZE = 50
+SLEEP_BETWEEN_CHUNKS = 3
+YF_TIMEOUT = 180
 
 logger = logging.getLogger(__name__)
+
+
+def _yf_download_with_timeout(tickers, period, interval, timeout=YF_TIMEOUT):
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        future = executor.submit(
+            yf.download,
+            tickers=tickers,
+            period=period,
+            interval=interval,
+            auto_adjust=True,
+            threads=True,
+            progress=False,
+            group_by="ticker",
+        )
+        try:
+            return future.result(timeout=timeout)
+        except FuturesTimeout:
+            raise TimeoutError(f"yfinance download timed out after {timeout}s for chunk of {len(tickers)} tickers")
 
 CREATE_TABLE_SQL = """
 CREATE TABLE IF NOT EXISTS daily_data (
@@ -43,20 +63,12 @@ class StockDataEngine:
         failed = []
         for idx, chunk in enumerate(chunks, 1):
             try:
-                data = yf.download(
-                    tickers=chunk,
-                    period="1y",
-                    interval="1d",
-                    auto_adjust=True,
-                    threads=True,
-                    progress=False,
-                    group_by="ticker"
-                )
+                data = _yf_download_with_timeout(chunk, "1y", "1d")
                 self._store_chunk(conn, data)
-                logger.info("Chunk %d/%d done", idx, len(chunks))
+                logger.info("Chunk %d/%d done (%d tickers)", idx, len(chunks), len(chunk))
             except Exception as e:
                 failed.extend(chunk)
-                logger.warning("Chunk %d/%d failed: %s", idx, len(chunks), e)
+                logger.warning("Chunk %d/%d failed (%d tickers): %s", idx, len(chunks), len(chunk), e)
             time.sleep(SLEEP_BETWEEN_CHUNKS)
         conn.close()
         self._log_failed(failed)
@@ -111,15 +123,7 @@ class StockDataEngine:
         chunks = [tickers[i:i+CHUNK_SIZE] for i in range(0, len(tickers), CHUNK_SIZE)]
         for idx, chunk in enumerate(chunks, 1):
             try:
-                data = yf.download(
-                    tickers=chunk,
-                    period="5d",
-                    interval="1d",
-                    auto_adjust=True,
-                    threads=True,
-                    progress=False,
-                    group_by="ticker"
-                )
+                data = _yf_download_with_timeout(chunk, "5d", "1d", timeout=120)
                 self._store_chunk(conn, data)
             except Exception:
                 pass
