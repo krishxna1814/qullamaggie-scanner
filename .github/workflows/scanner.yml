@@ -1,22 +1,17 @@
 name: Breakout Scanner
 
 on:
-  schedule:
-    # EOD Scan: Mon-Fri 4:30 PM EST (21:30 UTC)
-    - cron: '30 21 * * 1-5'
-    # Weekly Deep: Sunday 8 PM EST (Mon 01:00 UTC)
-    - cron: '0 1 * * 0'
-
   workflow_dispatch:
     inputs:
       mode:
-        description: 'Scan mode'
+        description: 'Scan period'
         required: true
-        default: 'scan'
+        default: '6mo'
         type: choice
         options:
-          - scan
-          - weekly
+          - 1mo
+          - 3mo
+          - 6mo
 
 jobs:
   scan:
@@ -41,21 +36,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Determine scan mode
-        id: mode
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "mode=${{ github.event.inputs.mode }}" >> $GITHUB_OUTPUT
-          else
-            echo "mode=scan" >> $GITHUB_OUTPUT
-          fi
-
       - name: Run scanner
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           CHAT_ID: ${{ secrets.CHAT_ID }}
         run: |
-          python main.py --${{ steps.mode.outputs.mode }}
+          python main.py --scan-${{ github.event.inputs.mode }}
 
       - name: Commit results
         run: |

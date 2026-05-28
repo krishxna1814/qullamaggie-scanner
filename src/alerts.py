@@ -1,4 +1,3 @@
-import json
 import logging
 import os
 
@@ -10,6 +9,10 @@ logger = logging.getLogger(__name__)
 
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN", "")
 CHAT_ID = os.environ.get("CHAT_ID", "")
+
+
+def _chart_url(ticker: str) -> str:
+    return f"https://finviz.com/chart.ashx?t={ticker}&ty=c&ta=1&p=d&s=l"
 
 
 class TelegramAlerter:
@@ -36,49 +39,30 @@ class TelegramAlerter:
             return False
 
     def send_breakout(self, result: dict) -> bool:
+        ticker = result["ticker"]
         msg = (
             f"━━━━━━━━━━━━━━━━━━━\n"
-            f"🚀 BREAKOUT ALERT{' 🔥 EP' if result.get('ep_candidate') else ''}\n"
+            f"🚀 #{result['rank']} {ticker}\n"
             f"━━━━━━━━━━━━━━━━━━━\n"
-            f"📌 Ticker   : {result['ticker']}\n"
-            f"💰 Price    : ${result['price']}\n"
-            f"📊 Volume   : {result['volume_ratio']}x avg\n"
-            f"📈 52W High : {result['distance_from_52w_high']}%\n"
-            f"🎯 Tight    : {result['consolidation_tightness']}%\n"
-            f"⚡ Signal   : {result['signal_strength']}\n"
-            f"⏰ Time     : {result.get('scan_time', format_est())}\n"
+            f"💰 Price      : ${result['price']}\n"
+            f"📊 Return     : {result['total_return']}%\n"
+            f"📈 ADR        : {result['adr']}%\n"
+            f"📊 avg Vol    : {result['avg_volume']:,}\n"
+            f"📈 [Chart]({_chart_url(ticker)})\n"
             f"━━━━━━━━━━━━━━━━━━━"
         )
         return self._send(msg)
 
-    def send_summary(self, results: list[dict]) -> bool:
+    def send_summary(self, results: list[dict], period: str = "") -> bool:
         if not results:
-            return self._send("📭 No breakouts found today.")
-        sorted_r = sorted(results, key=lambda r: r["volume_ratio"], reverse=True)
-        count = len(sorted_r)
-        strong = sum(1 for r in sorted_r if r.get("ep_candidate"))
-        msg = (
-            f"🎯 **SCAN COMPLETE**\n"
-            f"📊 Found {count} breakouts"
-        )
-        if strong:
-            msg += f"\n🔥 {strong} EP candidates"
-        msg += f"\n⏰ {format_est()}"
-        return self._send(msg)
-
-    def send_status(self, message: str) -> bool:
-        return self._send(message)
-
-    def send_watchlist(self, results: list[dict]) -> bool:
-        if not results:
-            return self._send("📭 Weekly scan complete — No breakouts found.")
-        sorted_r = sorted(results, key=lambda r: r["volume_ratio"], reverse=True)
-        lines = ["📋 **WEEKLY WATCHLIST**\n"]
-        for r in sorted_r:
-            ep = " 🔥" if r.get("ep_candidate") else ""
+            return self._send(f"📭 No stocks passed filters{period}.")
+        label = f" ({period})" if period else ""
+        lines = [f"🎯 **TOP GAINERS{label}**\n"]
+        for r in results:
             lines.append(
-                f"{r['ticker']:5} | ${r['price']:>7.2f} | "
-                f"{r['volume_ratio']:>4.2f}x | {r['distance_from_52w_high']:>5.2f}%{ep}"
+                f"#{r['rank']} {r['ticker']:5} | +{r['total_return']}% | "
+                f"ADR {r['adr']}% | Vol {r['avg_volume']:,}\n"
+                f"[📈 Chart]({_chart_url(r['ticker'])})\n"
             )
         msg = "\n".join(lines)
         if len(msg) > 4000:
@@ -89,6 +73,9 @@ class TelegramAlerter:
             return ok
         return self._send(msg)
 
+    def send_status(self, message: str) -> bool:
+        return self._send(message)
+
     def send_check(self, ticker: str, analysis: str) -> bool:
-        msg = f"🔍 **{ticker} Check**\n{analysis}"
+        msg = f"🔍 **{ticker} Check**\n{analysis}\n[📈 Chart]({_chart_url(ticker)})"
         return self._send(msg)

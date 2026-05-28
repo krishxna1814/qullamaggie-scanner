@@ -34,13 +34,9 @@ class SmartFetcher:
     def __init__(self, chunk_size: int = CHUNK_SIZE):
         self.chunk_size = chunk_size
 
-    def eod_fetch(self, tickers: list[str]) -> dict[str, pd.DataFrame]:
-        logger.info("EOD fetch: %d tickers, 6 months data", len(tickers))
-        return self._fetch_in_chunks(tickers, "6mo", "1d")
-
-    def weekly_fetch(self, tickers: list[str]) -> dict[str, pd.DataFrame]:
-        logger.info("Weekly fetch: %d tickers, 6 months data", len(tickers))
-        return self._fetch_in_chunks(tickers, "6mo", "1d")
+    def fetch_by_period(self, tickers: list[str], period: str) -> dict[str, pd.DataFrame]:
+        logger.info("Fetch: %d tickers, %s data", len(tickers), period)
+        return self._fetch_in_chunks(tickers, period, "1d")
 
     def _fetch_in_chunks(self, tickers: list[str], period: str, interval: str, timeout: int = YF_TIMEOUT) -> dict[str, pd.DataFrame]:
         start = time.perf_counter()
@@ -92,9 +88,9 @@ class SmartFetcher:
                 continue
         return result
 
-    def fetch_single(self, ticker: str) -> pd.DataFrame | None:
+    def fetch_single(self, ticker: str, period: str = "6mo") -> pd.DataFrame | None:
         try:
-            data = yf.download(tickers=ticker, period="6mo", interval="1d", auto_adjust=True, threads=True, progress=False)
+            data = yf.download(tickers=ticker, period=period, interval="1d", auto_adjust=True, threads=True, progress=False)
             if not hasattr(data, "columns") or data.empty:
                 return None
             parsed = self._parse_chunk(data)

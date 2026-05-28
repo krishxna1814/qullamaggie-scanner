@@ -133,14 +133,10 @@ def fetch_universe_with_prices() -> list[dict]:
     raise RuntimeError("All universe sources failed. No cached universe.csv found.")
 
 
-def filter_liquid(rows: list[dict], min_price: float = 10.0, max_count: int | None = None) -> list[str]:
-    passed = [r for r in rows if r["lastsale"] >= min_price]
-    passed.sort(key=lambda r: r.get("marketCap", 0), reverse=True)
-    if max_count is not None:
-        passed = passed[:max_count]
+def filter_liquid(rows: list[dict], min_price: float = 1.0, min_mcap: float = 100_000_000) -> list[str]:
+    passed = [r for r in rows if r["lastsale"] >= min_price and r.get("marketCap", 0) >= min_mcap]
     result = [r["symbol"] for r in passed]
-    cap = f"top {max_count} by" if max_count else "sorted by"
-    logger.info("Liquidity filter: %d/%d passed price>=%s (%s market cap)", len(result), len(rows), f"${min_price:.0f}", cap)
+    logger.info("Universe filter: %d/%d passed price>=%s, mcap>=%s", len(result), len(rows), f"${min_price:.0f}", f"${min_mcap:.0f}")
     return result
 
 
