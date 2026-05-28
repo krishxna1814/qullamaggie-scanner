@@ -7,7 +7,7 @@ import yfinance as yf
 
 CHUNK_SIZE = 50
 SLEEP_BETWEEN_CHUNKS = 3
-YF_TIMEOUT = 180
+YF_TIMEOUT = 30
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +40,7 @@ class SmartFetcher:
 
     def intraday_fetch(self, tickers: list[str]) -> dict[str, pd.DataFrame]:
         logger.info("Intraday fetch: %d tickers, 5 days data", len(tickers))
-        return self._fetch_in_chunks(tickers, "5d", "1d", timeout=120)
+        return self._fetch_in_chunks(tickers, "5d", "1d")
 
     def weekly_fetch(self, tickers: list[str]) -> dict[str, pd.DataFrame]:
         logger.info("Weekly fetch: %d tickers, 1 year data", len(tickers))
