@@ -22,6 +22,7 @@ def _yf_download_with_timeout(tickers, period, interval, timeout=YF_TIMEOUT):
             auto_adjust=True,
             threads=True,
             progress=False,
+            group_by="ticker",
         )
         try:
             return future.result(timeout=timeout)
