@@ -38,9 +38,9 @@ class SmartFetcher:
         logger.info("EOD fetch: %d tickers, 1 year data", len(tickers))
         return self._fetch_in_chunks(tickers, "1y", "1d")
 
-    def intraday_fetch(self, tickers: list[str]) -> dict[str, pd.DataFrame]:
-        logger.info("Intraday fetch: %d tickers, 5 days data", len(tickers))
-        return self._fetch_in_chunks(tickers, "5d", "1d")
+    def semi_annual_fetch(self, tickers: list[str]) -> dict[str, pd.DataFrame]:
+        logger.info("Semi-annual fetch: %d tickers, 6 months data", len(tickers))
+        return self._fetch_in_chunks(tickers, "6mo", "1d")
 
     def weekly_fetch(self, tickers: list[str]) -> dict[str, pd.DataFrame]:
         logger.info("Weekly fetch: %d tickers, 1 year data", len(tickers))

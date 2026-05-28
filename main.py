@@ -18,7 +18,6 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 RESULTS_DIR = os.path.join(os.path.dirname(__file__), "results")
-SCAN_LIMIT = 500
 alert = TelegramAlerter()
 
 
@@ -39,15 +38,39 @@ def save_results(results: list[dict], prefix: str = "scan"):
         logger.warning("Failed to save results: %s", e)
 
 
+TIER1_LIMIT = 1000
+
+
 def _get_targets() -> list[str]:
     rows = fetch_universe_with_prices()
-    targets = filter_liquid(rows, max_count=SCAN_LIMIT)
+    targets = filter_liquid(rows)
     if not targets:
-        logger.warning("No liquid stocks — falling back to first %d from universe", SCAN_LIMIT)
+        logger.warning("No liquid stocks — falling back to all from universe")
         tickers = fetch_universe()
-        targets = tickers[:SCAN_LIMIT]
+        targets = tickers
     save_universe(targets)
     return targets
+
+
+def _tiered_fetch_scan(targets: list[str], prefix: str) -> list[dict]:
+    tier1 = targets[:TIER1_LIMIT]
+    tier2 = targets[TIER1_LIMIT:]
+
+    data = {}
+    if tier1:
+        logger.info("Tier 1: %d stocks (1yr data, full scan)", len(tier1))
+        f1 = SmartFetcher(chunk_size=25)
+        data.update(f1.eod_fetch(tier1))
+    if tier2:
+        logger.info("Tier 2: %d stocks (6mo data, lite scan)", len(tier2))
+        f2 = SmartFetcher(chunk_size=50)
+        data.update(f2.semi_annual_fetch(tier2))
+
+    if not data:
+        return []
+
+    scanner = QullamaggieScanner(data)
+    return scanner.scan()
 
 
 def cmd_scan():
@@ -57,15 +80,7 @@ def cmd_scan():
     targets = _get_targets()
     logger.info("Targets: %d stocks", len(targets))
 
-    fetcher = SmartFetcher()
-    data = fetcher.eod_fetch(targets)
-    if not data:
-        alert.send_status("❌ No data fetched.")
-        return
-
-    logger.info("Running Qullamaggie scanner...")
-    scanner = QullamaggieScanner(data)
-    results = scanner.scan()
+    results = _tiered_fetch_scan(targets, "eod")
 
     save_results(results, "eod")
     alert.send_summary(results)
@@ -77,29 +92,13 @@ def cmd_scan():
     logger.info("Total time: %.1f seconds", elapsed)
 
 
-def cmd_quick():
-    alert.send_status("⚡ Quick scan starting")
-    targets = _get_targets()[:200]
-    fetcher = SmartFetcher()
-    data = fetcher.intraday_fetch(targets)
-    scanner = QullamaggieScanner(data)
-    results = scanner.scan()
-
-    save_results(results, "quick")
-    alert.send_summary(results)
-    if results:
-        for r in results[:10]:
-            alert.send_breakout(r)
-
-
 def cmd_weekly():
     overall_start = time.perf_counter()
     alert.send_status("📋 Weekly deep scan starting")
     targets = _get_targets()
-    fetcher = SmartFetcher()
-    data = fetcher.weekly_fetch(targets)
-    scanner = QullamaggieScanner(data)
-    results = scanner.scan()
+    logger.info("Targets: %d stocks", len(targets))
+
+    results = _tiered_fetch_scan(targets, "weekly")
 
     save_results(results, "weekly")
     alert.send_summary(results)
@@ -130,16 +129,13 @@ def cmd_status():
         f"⏰ {format_est()}\n"
         f"📁 Results stored in results/\n"
         f"📅 EOD scan: Mon-Fri 4:30 PM EST\n"
-        f"⚡ Midday: Mon-Fri 12:30 PM EST\n"
-        f"📋 Weekly: Sun 8 PM EST\n"
-        f"📈 Intraday: Every 30 min market hours"
+        f"📋 Weekly: Sun 8 PM EST"
     )
 
 
 def main():
     parser = argparse.ArgumentParser(description="Qullamaggie Breakout Scanner")
     parser.add_argument("--scan", action="store_true", help="Full EOD scan")
-    parser.add_argument("--quick", action="store_true", help="Intraday quick scan")
     parser.add_argument("--weekly", action="store_true", help="Deep weekly scan")
     parser.add_argument("--check", type=str, metavar="TICKER", help="Check single stock")
     parser.add_argument("--status", action="store_true", help="Send status message")
@@ -152,8 +148,6 @@ def main():
     try:
         if args.scan:
             cmd_scan()
-        elif args.quick:
-            cmd_quick()
         elif args.weekly:
             cmd_weekly()
         elif args.check:

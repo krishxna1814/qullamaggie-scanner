@@ -26,7 +26,7 @@ class QullamaggieScanner:
         return results
 
     def _scan_ticker(self, ticker: str, df: pd.DataFrame) -> dict | None:
-        if df is None or len(df) < 200:
+        if df is None or len(df) < 100:
             return None
 
         df.columns = [str(c).lower().replace("adj ", "") for c in df.columns]
@@ -44,6 +44,8 @@ class QullamaggieScanner:
         except (IndexError, ValueError):
             return None
 
+        is_full = len(df) >= 200
+
         # Layer 1 — Liquidity
         fifty_day_idx = max(0, len(close) - 50)
         vol50 = np.mean(volume[fifty_day_idx:])
@@ -52,13 +54,19 @@ class QullamaggieScanner:
 
         # Layer 2 — Uptrend
         ema50 = self._ema(close, 50)
-        ema150 = self._ema(close, 150)
-        ema200 = self._ema(close, 200)
-        if not (latest_close > ema50[-1] and latest_close > ema150[-1] and latest_close > ema200[-1]):
-            return None
+        if is_full:
+            ema150 = self._ema(close, 150)
+            ema200 = self._ema(close, 200)
+            if not (latest_close > ema50[-1] and latest_close > ema150[-1] and latest_close > ema200[-1]):
+                return None
+        else:
+            ema100 = self._ema(close, 100)
+            if not (latest_close > ema50[-1] and latest_close > ema100[-1]):
+                return None
 
-        # Layer 3 — Near 52-Week High
-        year_high = np.max(high[-252:])
+        # Layer 3 — Near High
+        lookback_high = min(252, len(high))
+        year_high = np.max(high[-lookback_high:])
         if latest_close < year_high * 0.85:
             return None
 
@@ -102,6 +110,7 @@ class QullamaggieScanner:
             "consolidation_tightness": round(tightness * 100, 2),
             "ep_candidate": ep_candidate,
             "signal_strength": signal_strength,
+            "tier": "full" if is_full else "lite",
             "scan_time": time.strftime("%Y-%m-%d %I:%M %p EST"),
         }
 
@@ -173,20 +182,29 @@ class QullamaggieScanner:
         else:
             lines.append(f"  ✅ Layer 1: Liquid")
 
+        is_full = len(close) >= 200
         ema50 = QullamaggieScanner._ema(close, 50)
-        ema150 = QullamaggieScanner._ema(close, 150)
-        ema200 = QullamaggieScanner._ema(close, 200)
-        if not (latest_close > ema50[-1] and latest_close > ema150[-1] and latest_close > ema200[-1]):
-            lines.append(f"  ❌ Layer 2: Close=${latest_close:.2f} not above all EMAs (50={ema50[-1]:.2f}, 150={ema150[-1]:.2f}, 200={ema200[-1]:.2f})")
+        if is_full:
+            ema150 = QullamaggieScanner._ema(close, 150)
+            ema200 = QullamaggieScanner._ema(close, 200)
+            if not (latest_close > ema50[-1] and latest_close > ema150[-1] and latest_close > ema200[-1]):
+                lines.append(f"  ❌ Layer 2: Close=${latest_close:.2f} not above all EMAs (50={ema50[-1]:.2f}, 150={ema150[-1]:.2f}, 200={ema200[-1]:.2f})")
+            else:
+                lines.append(f"  ✅ Layer 2: Uptrend (above all EMAs)")
         else:
-            lines.append(f"  ✅ Layer 2: Uptrend (above all EMAs)")
+            ema100 = QullamaggieScanner._ema(close, 100)
+            if not (latest_close > ema50[-1] and latest_close > ema100[-1]):
+                lines.append(f"  ❌ Layer 2: Close=${latest_close:.2f} not above EMAs (50={ema50[-1]:.2f}, 100={ema100[-1]:.2f})")
+            else:
+                lines.append(f"  ✅ Layer 2 (lite): Uptrend (above EMA50/100)")
 
-        year_high = np.max(high[-252:])
+        lookback_high = min(252, len(high))
+        year_high = np.max(high[-lookback_high:])
         pct_of_high = (latest_close / year_high) * 100 if year_high > 0 else 0
         if latest_close < year_high * 0.85:
-            lines.append(f"  ❌ Layer 3: ${latest_close} is {pct_of_high:.1f}% of 52w high ${year_high:.2f} (need >=85%)")
+            lines.append(f"  ❌ Layer 3: ${latest_close} is {pct_of_high:.1f}% of {lookback_high}d high ${year_high:.2f} (need >=85%)")
         else:
-            lines.append(f"  ✅ Layer 3: Near 52w high ({pct_of_high:.1f}%)")
+            lines.append(f"  ✅ Layer 3: Near high ({pct_of_high:.1f}%)")
 
         lookback = min(15, len(close))
         rh = np.max(high[-lookback:])

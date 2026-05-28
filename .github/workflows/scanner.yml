@@ -4,12 +4,8 @@ on:
   schedule:
     # EOD Scan: Mon-Fri 4:30 PM EST (21:30 UTC)
     - cron: '30 21 * * 1-5'
-    # Midday Scan: Mon-Fri 12:30 PM EST (17:30 UTC)
-    - cron: '30 17 * * 1-5'
     # Weekly Deep: Sunday 8 PM EST (Mon 01:00 UTC)
     - cron: '0 1 * * 0'
-    # Intraday: Every 30 min Mon-Fri 9:30 AM - 4 PM EST
-    - cron: '*/30 14-21 * * 1-5'
 
   workflow_dispatch:
     inputs:
@@ -20,9 +16,7 @@ on:
         type: choice
         options:
           - scan
-          - quick
           - weekly
-          - status
 
 jobs:
   scan:
@@ -53,14 +47,7 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "mode=${{ github.event.inputs.mode }}" >> $GITHUB_OUTPUT
           else
-            CRON="${{ github.event.schedule }}"
-            case "$CRON" in
-              "30 21 * * 1-5")  echo "mode=scan" >> $GITHUB_OUTPUT ;;
-              "30 17 * * 1-5")  echo "mode=quick" >> $GITHUB_OUTPUT ;;
-              "0 1 * * 0")      echo "mode=weekly" >> $GITHUB_OUTPUT ;;
-              "*/30 14-21 * * 1-5") echo "mode=quick" >> $GITHUB_OUTPUT ;;
-              *)                echo "mode=scan" >> $GITHUB_OUTPUT ;;
-            esac
+            echo "mode=scan" >> $GITHUB_OUTPUT
           fi
 
       - name: Run scanner
