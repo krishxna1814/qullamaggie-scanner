@@ -297,7 +297,12 @@ def setup_scheduler():
     logger.info("Scheduler started: Sunday 8PM full update, Mon-Fri 4:30PM delta+scan")
 
 def build_app() -> Application:
-    app = Application.builder().token(BOT_TOKEN).build()
+    async def post_init(app: Application):
+        await set_commands(app)
+        setup_scheduler()
+        logger.info("Bot started. Scheduler running.")
+
+    app = Application.builder().token(BOT_TOKEN).post_init(post_init).build()
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("help", help_command))
@@ -340,14 +345,7 @@ def main():
         return
 
     app = build_app()
-
-    async def on_startup(app: Application):
-        await set_commands(app)
-        setup_scheduler()
-        logger.info("Bot started. Scheduler running.")
-
-    logger.info("Starting bot...")
-    app.run_polling(allowed_updates=Update.ALL_TYPES, on_startup=on_startup)
+    app.run_polling(allowed_updates=Update.ALL_TYPES)
 
 if __name__ == "__main__":
     main()
