@@ -5,8 +5,8 @@ from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeou
 import pandas as pd
 import yfinance as yf
 
-CHUNK_SIZE = 100
-SLEEP_BETWEEN_CHUNKS = 2
+CHUNK_SIZE = 50
+SLEEP_BETWEEN_CHUNKS = 3
 YF_TIMEOUT = 180
 
 logger = logging.getLogger(__name__)

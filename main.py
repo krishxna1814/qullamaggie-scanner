@@ -4,9 +4,8 @@ import logging
 import os
 import sys
 import time
-from datetime import datetime
 
-from src.universe import fetch_universe, save_universe, pre_filter
+from src.universe import fetch_universe, save_universe
 from src.fetcher import SmartFetcher
 from src.scanner import QullamaggieScanner
 from src.alerts import TelegramAlerter
@@ -48,16 +47,9 @@ def cmd_scan():
     save_universe(tickers)
     logger.info("Universe: %d tickers", len(tickers))
 
-    logger.info("Pre-filtering to candidates...")
-    candidates = pre_filter(tickers)
-    if not candidates:
-        alert.send_status("⚠️ No candidates passed pre-filter.")
-        return
-    logger.info("Candidates: %d tickers", len(candidates))
-
-    logger.info("Fetching 6 months data for %d candidates...", len(candidates))
+    logger.info("Fetching 6 months data for %d tickers...", len(tickers))
     fetcher = SmartFetcher()
-    data = fetcher.eod_fetch(candidates)
+    data = fetcher.eod_fetch(tickers)
     if not data:
         alert.send_status("❌ No data fetched.")
         return
@@ -79,11 +71,7 @@ def cmd_scan():
 def cmd_quick():
     alert.send_status("⚡ Quick scan starting")
     tickers = fetch_universe()
-    candidates = pre_filter(tickers)
-    top = candidates[:200]
-    if not top:
-        alert.send_status("⚠️ No candidates for quick scan.")
-        return
+    top = tickers[:200]
     fetcher = SmartFetcher()
     data = fetcher.intraday_fetch(top)
     scanner = QullamaggieScanner(data)
@@ -102,13 +90,8 @@ def cmd_weekly():
 
     tickers = fetch_universe()
     save_universe(tickers)
-    candidates = pre_filter(tickers)
-    if not candidates:
-        alert.send_status("⚠️ No candidates for weekly scan.")
-        return
-
     fetcher = SmartFetcher()
-    data = fetcher.weekly_fetch(candidates)
+    data = fetcher.weekly_fetch(tickers)
     scanner = QullamaggieScanner(data)
     results = scanner.scan()
 
