@@ -76,6 +76,7 @@ jobs:
           git config user.email "scanner@github.com"
           git add results/
           git diff --staged --quiet || git commit -m "Scan results $(date +'%Y-%m-%d')"
+          git pull --rebase origin main
           git push origin main
 
       - name: Upload logs on failure

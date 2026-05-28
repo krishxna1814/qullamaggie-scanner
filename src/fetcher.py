@@ -22,7 +22,6 @@ def _yf_download_with_timeout(tickers, period, interval, timeout=YF_TIMEOUT):
             auto_adjust=True,
             threads=True,
             progress=False,
-            group_by="ticker",
         )
         try:
             return future.result(timeout=timeout)
@@ -63,33 +62,43 @@ class SmartFetcher:
         logger.info("Fetched %d stocks in %.1f seconds", len(result), elapsed)
         return result
 
-    def _parse_chunk(self, data: pd.DataFrame) -> dict[str, pd.DataFrame]:
+    def _parse_chunk(self, data) -> dict[str, pd.DataFrame]:
         result = {}
-        if data.empty:
+        if data is None or not hasattr(data, "columns") or data.empty:
             return result
-        if isinstance(data.columns, pd.MultiIndex):
-            tickers_in = data.columns.get_level_values(1).unique()
-            for t in tickers_in:
-                try:
-                    tdf = data.xs(t, axis=1, level=1).dropna(how="all")
-                    if tdf.empty or len(tdf) < 5:
-                        continue
-                    tdf.columns = [c.lower() for c in tdf.columns]
-                    result[t.upper()] = tdf
-                except Exception:
-                    continue
-        else:
-            ticker = "UNKNOWN"
+        if not isinstance(data.columns, pd.MultiIndex):
             tdf = data.dropna(how="all")
             if not tdf.empty and len(tdf) >= 5:
-                tdf.columns = [c.lower() for c in tdf.columns]
-                result[ticker] = tdf
+                tdf.columns = [str(c).lower() for c in tdf.columns]
+                result["UNKNOWN"] = tdf
+            return result
+
+        l0 = list(data.columns.get_level_values(0).unique())
+        l1 = list(data.columns.get_level_values(1).unique())
+
+        def _has_ticker(vals):
+            return sum(1 for v in vals if isinstance(v, str) and v.isupper() and len(v) <= 10)
+
+        ticker_lvl = 0 if _has_ticker(l0) >= _has_ticker(l1) else 1
+        tickers_in = data.columns.get_level_values(ticker_lvl).unique()
+
+        for t in tickers_in:
+            if not isinstance(t, str) or not t.isupper():
+                continue
+            try:
+                tdf = data.xs(t, axis=1, level=ticker_lvl).dropna(how="all")
+                if tdf.empty or len(tdf) < 5:
+                    continue
+                tdf.columns = [str(c).lower() for c in tdf.columns]
+                result[t.upper()] = tdf
+            except Exception:
+                continue
         return result
 
     def fetch_single(self, ticker: str) -> pd.DataFrame | None:
         try:
             data = yf.download(tickers=ticker, period="1y", interval="1d", auto_adjust=True, threads=True, progress=False)
-            if data.empty:
+            if not hasattr(data, "columns") or data.empty:
                 return None
             parsed = self._parse_chunk(data)
             return parsed.get(ticker.upper())
