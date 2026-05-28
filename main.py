@@ -96,8 +96,8 @@ async def full_setup(context: ContextTypes.DEFAULT_TYPE = None, chat_id: int | N
             return
 
     if progress_chat and bot:
-        await bot.send_message(chat_id=progress_chat, text=f"📥 Downloading 1-year data for {len(tickers)} stocks... This takes ~10-15 min.")
-    failed = engine.bulk_download(tickers)
+        await bot.send_message(chat_id=progress_chat, text=f"📥 Downloading 1-year data for {len(tickers)} stocks + sectors... This takes ~10-15 min.")
+    failed = engine.bulk_download(tickers + SECTOR_TICKERS)
     msg = f"✅ Setup complete! {len(tickers)} tickers in universe."
     if failed:
         msg += f"\n⚠️ {len(failed)} tickers failed (logged to failed_tickers.log)"
@@ -111,7 +111,7 @@ async def scheduled_full_update():
     if not tickers:
         logger.warning("No universe file found, skipping scheduled update")
         return
-    engine.bulk_download(tickers)
+    engine.bulk_download(tickers + SECTOR_TICKERS)
     logger.info("Scheduled: Weekly full update complete")
 
 async def scheduled_daily_scan():
@@ -121,7 +121,7 @@ async def scheduled_daily_scan():
     if not tickers:
         logger.warning("No universe file found, skipping scheduled scan")
         return
-    engine.delta_update(tickers)
+    engine.delta_update(tickers + SECTOR_TICKERS)
     results = await run_scan_and_notify()
     if not _bot and BOT_TOKEN:
         from telegram import Bot as TelegramBot
@@ -207,7 +207,7 @@ async def update_command(upd: Update, context: ContextTypes.DEFAULT_TYPE):
         if not tickers:
             await upd.message.reply_text("❌ No universe file found. Run /setup first.")
             return
-        engine.delta_update(tickers)
+        engine.delta_update(tickers + SECTOR_TICKERS)
         await upd.message.reply_text("✅ Delta update complete. Now scanning...")
         results = await run_scan_and_notify()
         msg = format_scan_results(results)
@@ -224,7 +224,7 @@ async def full_update(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if not tickers:
             await update.message.reply_text("❌ No universe file found. Run /setup first.")
             return
-        engine.bulk_download(tickers)
+        engine.bulk_download(tickers + SECTOR_TICKERS)
         await update.message.reply_text("✅ Full download complete. Now scanning...")
         results = await run_scan_and_notify()
         msg = format_scan_results(results)

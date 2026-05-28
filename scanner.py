@@ -66,8 +66,8 @@ class QullamaggieScanner:
         if tightness >= 0.12:
             return None
 
-        vol_slope = self._linear_slope(volume[-10:])
-        if vol_slope > 0 and len(volume) >= 10:
+        vol_slope = self._linear_slope(volume[-11:-1]) if len(volume) >= 11 else 0
+        if vol_slope > 0:
             return None
 
         # Layer 5 — Breakout Trigger
