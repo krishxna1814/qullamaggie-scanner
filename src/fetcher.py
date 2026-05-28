@@ -5,9 +5,9 @@ from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeou
 import pandas as pd
 import yfinance as yf
 
-CHUNK_SIZE = 25
+CHUNK_SIZE = 50
 SLEEP_BETWEEN_CHUNKS = 2
-YF_TIMEOUT = 20
+YF_TIMEOUT = 30
 
 logger = logging.getLogger(__name__)
 
@@ -35,16 +35,12 @@ class SmartFetcher:
         self.chunk_size = chunk_size
 
     def eod_fetch(self, tickers: list[str]) -> dict[str, pd.DataFrame]:
-        logger.info("EOD fetch: %d tickers, 1 year data", len(tickers))
-        return self._fetch_in_chunks(tickers, "1y", "1d")
-
-    def semi_annual_fetch(self, tickers: list[str]) -> dict[str, pd.DataFrame]:
-        logger.info("Semi-annual fetch: %d tickers, 6 months data", len(tickers))
+        logger.info("EOD fetch: %d tickers, 6 months data", len(tickers))
         return self._fetch_in_chunks(tickers, "6mo", "1d")
 
     def weekly_fetch(self, tickers: list[str]) -> dict[str, pd.DataFrame]:
-        logger.info("Weekly fetch: %d tickers, 1 year data", len(tickers))
-        return self._fetch_in_chunks(tickers, "1y", "1d")
+        logger.info("Weekly fetch: %d tickers, 6 months data", len(tickers))
+        return self._fetch_in_chunks(tickers, "6mo", "1d")
 
     def _fetch_in_chunks(self, tickers: list[str], period: str, interval: str, timeout: int = YF_TIMEOUT) -> dict[str, pd.DataFrame]:
         start = time.perf_counter()
@@ -98,7 +94,7 @@ class SmartFetcher:
 
     def fetch_single(self, ticker: str) -> pd.DataFrame | None:
         try:
-            data = yf.download(tickers=ticker, period="1y", interval="1d", auto_adjust=True, threads=True, progress=False)
+            data = yf.download(tickers=ticker, period="6mo", interval="1d", auto_adjust=True, threads=True, progress=False)
             if not hasattr(data, "columns") or data.empty:
                 return None
             parsed = self._parse_chunk(data)

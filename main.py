@@ -38,9 +38,6 @@ def save_results(results: list[dict], prefix: str = "scan"):
         logger.warning("Failed to save results: %s", e)
 
 
-TIER1_LIMIT = 1000
-
-
 def _get_targets() -> list[str]:
     rows = fetch_universe_with_prices()
     targets = filter_liquid(rows)
@@ -52,23 +49,12 @@ def _get_targets() -> list[str]:
     return targets
 
 
-def _tiered_fetch_scan(targets: list[str], prefix: str) -> list[dict]:
-    tier1 = targets[:TIER1_LIMIT]
-    tier2 = targets[TIER1_LIMIT:]
-
-    data = {}
-    if tier1:
-        logger.info("Tier 1: %d stocks (1yr data, full scan)", len(tier1))
-        f1 = SmartFetcher(chunk_size=25)
-        data.update(f1.eod_fetch(tier1))
-    if tier2:
-        logger.info("Tier 2: %d stocks (6mo data, lite scan)", len(tier2))
-        f2 = SmartFetcher(chunk_size=50)
-        data.update(f2.semi_annual_fetch(tier2))
-
+def _fetch_and_scan(targets: list[str]) -> list[dict]:
+    logger.info("Fetching %d stocks (6mo data, chunk_size=50)", len(targets))
+    fetcher = SmartFetcher(chunk_size=50)
+    data = fetcher.eod_fetch(targets)
     if not data:
         return []
-
     scanner = QullamaggieScanner(data)
     return scanner.scan()
 
@@ -80,7 +66,7 @@ def cmd_scan():
     targets = _get_targets()
     logger.info("Targets: %d stocks", len(targets))
 
-    results = _tiered_fetch_scan(targets, "eod")
+    results = _fetch_and_scan(targets)
 
     save_results(results, "eod")
     alert.send_summary(results)
@@ -98,7 +84,7 @@ def cmd_weekly():
     targets = _get_targets()
     logger.info("Targets: %d stocks", len(targets))
 
-    results = _tiered_fetch_scan(targets, "weekly")
+    results = _fetch_and_scan(targets)
 
     save_results(results, "weekly")
     alert.send_summary(results)
