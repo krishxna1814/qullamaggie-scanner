@@ -1,6 +1,5 @@
 .env
-tickers_raw.txt
 __pycache__/
 *.pyc
-failed_tickers.log
-last_results.json
+.DS_Store
+*.log

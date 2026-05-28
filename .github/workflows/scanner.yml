@@ -1,0 +1,86 @@
+name: Breakout Scanner
+
+on:
+  schedule:
+    # EOD Scan: Mon-Fri 4:30 PM EST (21:30 UTC)
+    - cron: '30 21 * * 1-5'
+    # Midday Scan: Mon-Fri 12:30 PM EST (17:30 UTC)
+    - cron: '30 17 * * 1-5'
+    # Weekly Deep: Sunday 8 PM EST (Mon 01:00 UTC)
+    - cron: '0 1 * * 0'
+    # Intraday: Every 30 min Mon-Fri 9:30 AM - 4 PM EST
+    - cron: '*/30 14-21 * * 1-5'
+
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Scan mode'
+        required: true
+        default: 'scan'
+        type: choice
+        options:
+          - scan
+          - quick
+          - weekly
+          - status
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Determine scan mode
+        id: mode
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "mode=${{ github.event.inputs.mode }}" >> $GITHUB_OUTPUT
+          else
+            CRON="${{ github.event.schedule }}"
+            case "$CRON" in
+              "30 21 * * 1-5")  echo "mode=scan" >> $GITHUB_OUTPUT ;;
+              "30 17 * * 1-5")  echo "mode=quick" >> $GITHUB_OUTPUT ;;
+              "0 1 * * 0")      echo "mode=weekly" >> $GITHUB_OUTPUT ;;
+              "*/30 14-21 * * 1-5") echo "mode=quick" >> $GITHUB_OUTPUT ;;
+              *)                echo "mode=scan" >> $GITHUB_OUTPUT ;;
+            esac
+          fi
+
+      - name: Run scanner
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          CHAT_ID: ${{ secrets.CHAT_ID }}
+        run: |
+          python main.py --${{ steps.mode.outputs.mode }}
+
+      - name: Commit results
+        run: |
+          git config user.name "Scanner Bot"
+          git config user.email "scanner@github.com"
+          git add results/
+          git diff --staged --quiet || git commit -m "Scan results $(date +'%Y-%m-%d')"
+          git push origin main
+
+      - name: Upload logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scanner-logs
+          path: |
+            results/
+            *.log
