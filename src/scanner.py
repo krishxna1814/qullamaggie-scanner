@@ -29,6 +29,7 @@ class QullamaggieScanner:
         if df is None or len(df) < 200:
             return None
 
+        df.columns = [str(c).lower().replace("adj ", "") for c in df.columns]
         close = df["close"].values
         high = df["high"].values
         low = df["low"].values
@@ -152,6 +153,7 @@ class QullamaggieScanner:
     @staticmethod
     def _debug_layers(ticker: str, df: pd.DataFrame) -> list[str]:
         lines = [f"🔍 {ticker} analysis:"]
+        df.columns = [str(c).lower().replace("adj ", "") for c in df.columns]
         close = df["close"].values
         high = df["high"].values
         low = df["low"].values
