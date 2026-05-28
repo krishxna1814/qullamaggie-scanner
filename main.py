@@ -5,7 +5,7 @@ import os
 import sys
 import time
 
-from src.universe import fetch_universe, save_universe
+from src.universe import fetch_universe, fetch_universe_with_prices, filter_liquid, save_universe
 from src.fetcher import SmartFetcher
 from src.scanner import QullamaggieScanner
 from src.alerts import TelegramAlerter
@@ -18,6 +18,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 RESULTS_DIR = os.path.join(os.path.dirname(__file__), "results")
+SCAN_LIMIT = 500
 alert = TelegramAlerter()
 
 
@@ -38,18 +39,26 @@ def save_results(results: list[dict], prefix: str = "scan"):
         logger.warning("Failed to save results: %s", e)
 
 
+def _get_targets() -> list[str]:
+    rows = fetch_universe_with_prices()
+    targets = filter_liquid(rows, max_count=SCAN_LIMIT)
+    if not targets:
+        logger.warning("No liquid stocks — falling back to first %d from universe", SCAN_LIMIT)
+        tickers = fetch_universe()
+        targets = tickers[:SCAN_LIMIT]
+    save_universe(targets)
+    return targets
+
+
 def cmd_scan():
     overall_start = time.perf_counter()
     alert.send_status("✅ Scanner started — EOD scan")
 
-    logger.info("Fetching stock universe...")
-    tickers = fetch_universe()
-    save_universe(tickers)
-    logger.info("Universe: %d tickers", len(tickers))
+    targets = _get_targets()
+    logger.info("Targets: %d stocks", len(targets))
 
-    logger.info("Fetching 6 months data for %d tickers...", len(tickers))
     fetcher = SmartFetcher()
-    data = fetcher.eod_fetch(tickers)
+    data = fetcher.eod_fetch(targets)
     if not data:
         alert.send_status("❌ No data fetched.")
         return
@@ -70,10 +79,9 @@ def cmd_scan():
 
 def cmd_quick():
     alert.send_status("⚡ Quick scan starting")
-    tickers = fetch_universe()
-    top = tickers[:200]
+    targets = _get_targets()[:200]
     fetcher = SmartFetcher()
-    data = fetcher.intraday_fetch(top)
+    data = fetcher.intraday_fetch(targets)
     scanner = QullamaggieScanner(data)
     results = scanner.scan()
 
@@ -87,11 +95,9 @@ def cmd_quick():
 def cmd_weekly():
     overall_start = time.perf_counter()
     alert.send_status("📋 Weekly deep scan starting")
-
-    tickers = fetch_universe()
-    save_universe(tickers)
+    targets = _get_targets()
     fetcher = SmartFetcher()
-    data = fetcher.weekly_fetch(tickers)
+    data = fetcher.weekly_fetch(targets)
     scanner = QullamaggieScanner(data)
     results = scanner.scan()
 

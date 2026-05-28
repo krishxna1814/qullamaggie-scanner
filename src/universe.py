@@ -46,7 +46,7 @@ def _try_fetch_nasdaq_txt() -> list[str] | None:
     return None
 
 
-def _try_fetch_nasdaq_api() -> list[str] | None:
+def _try_fetch_nasdaq_api_with_prices() -> list[dict] | None:
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
         "Accept": "application/json",
@@ -57,15 +57,23 @@ def _try_fetch_nasdaq_api() -> list[str] | None:
             resp.raise_for_status()
             data = resp.json()
             rows = data.get("data", {}).get("table", {}).get("rows", [])
-            tickers = []
+            result = []
             for row in rows:
                 symbol = row.get("symbol", "").strip()
                 if not symbol:
                     continue
                 if EXCLUDE_PATTERNS.search(symbol):
                     continue
-                tickers.append(symbol)
-            return sorted(set(tickers))
+                try:
+                    lastsale = float(row.get("lastsale", "0").replace("$", "").replace(",", ""))
+                except (ValueError, TypeError):
+                    lastsale = 0.0
+                try:
+                    volume = int(row.get("volume", "0").replace(",", ""))
+                except (ValueError, TypeError):
+                    volume = 0
+                result.append({"symbol": symbol, "lastsale": lastsale, "volume": volume})
+            return result
         except Exception as e:
             logger.warning("NASDAQ API attempt %d/%d failed: %s", attempt, MAX_RETRIES, e)
             if attempt < MAX_RETRIES:
@@ -79,15 +87,41 @@ def fetch_universe() -> list[str]:
         logger.info("NASDAQ TXT: %d tickers fetched", len(result))
         return result
     logger.info("NASDAQ TXT failed, trying NASDAQ API...")
-    result = _try_fetch_nasdaq_api()
-    if result is not None:
-        logger.info("NASDAQ API: %d tickers fetched", len(result))
-        return result
+    rows = _try_fetch_nasdaq_api_with_prices()
+    if rows is not None:
+        tickers = sorted(set(r["symbol"] for r in rows))
+        logger.info("NASDAQ API: %d tickers fetched", len(tickers))
+        return tickers
     cached = load_universe()
     if cached:
         logger.warning("All remote sources failed. Using cached universe.csv (%d tickers)", len(cached))
         return cached
     raise RuntimeError("All universe sources failed. No cached universe.csv found.")
+
+
+def fetch_universe_with_prices() -> list[dict]:
+    rows = _try_fetch_nasdaq_api_with_prices()
+    if rows is not None:
+        logger.info("NASDAQ API: %d tickers with prices fetched", len(rows))
+        return rows
+    logger.info("NASDAQ API failed, trying TXT fallback...")
+    tickers = _try_fetch_nasdaq_txt()
+    if tickers is not None:
+        logger.warning("NASDAQ TXT has no price data — returning symbols only (prices=0)")
+        return [{"symbol": t, "lastsale": 0.0, "volume": 0} for t in tickers]
+    cached = load_universe()
+    if cached:
+        logger.warning("All remote sources failed. Using cached universe.csv (%d tickers) without prices", len(cached))
+        return [{"symbol": t, "lastsale": 0.0, "volume": 0} for t in cached]
+    raise RuntimeError("All universe sources failed. No cached universe.csv found.")
+
+
+def filter_liquid(rows: list[dict], min_price: float = 10.0, min_volume: int = 300000, max_count: int = 500) -> list[str]:
+    passed = [r for r in rows if r["lastsale"] >= min_price and r["volume"] >= min_volume]
+    passed.sort(key=lambda r: r["volume"], reverse=True)
+    result = [r["symbol"] for r in passed[:max_count]]
+    logger.info("Liquidity filter: %d/%d passed (top %d by volume)", len(passed), len(rows), len(result))
+    return result
 
 
 def save_universe(tickers: list[str], path: str = UNIVERSE_PATH):
@@ -105,6 +139,3 @@ def load_universe(path: str = UNIVERSE_PATH) -> list[str]:
             return [row["ticker"] for row in csv.DictReader(f)]
     except (FileNotFoundError, KeyError):
         return []
-
-
-
