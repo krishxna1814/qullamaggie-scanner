@@ -339,16 +339,15 @@ def main():
         logger.error("BOT_TOKEN not set. Create a .env file with BOT_TOKEN=...")
         return
 
-    setup_scheduler()
     app = build_app()
 
-    import asyncio
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    loop.run_until_complete(set_commands(app))
+    async def on_startup(app: Application):
+        await set_commands(app)
+        setup_scheduler()
+        logger.info("Bot started. Scheduler running.")
 
-    logger.info("Bot started. Press Ctrl+C to stop.")
-    app.run_polling(allowed_updates=Update.ALL_TYPES)
+    logger.info("Starting bot...")
+    app.run_polling(allowed_updates=Update.ALL_TYPES, on_startup=on_startup)
 
 if __name__ == "__main__":
     main()
