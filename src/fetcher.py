@@ -35,8 +35,8 @@ class SmartFetcher:
         self.chunk_size = chunk_size
 
     def eod_fetch(self, tickers: list[str]) -> dict[str, pd.DataFrame]:
-        logger.info("EOD fetch: %d tickers, 6 months data", len(tickers))
-        return self._fetch_in_chunks(tickers, "6mo", "1d")
+        logger.info("EOD fetch: %d tickers, 1 year data", len(tickers))
+        return self._fetch_in_chunks(tickers, "1y", "1d")
 
     def intraday_fetch(self, tickers: list[str]) -> dict[str, pd.DataFrame]:
         logger.info("Intraday fetch: %d tickers, 5 days data", len(tickers))

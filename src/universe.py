@@ -46,6 +46,28 @@ def _try_fetch_nasdaq_txt() -> list[str] | None:
     return None
 
 
+def _parse_market_cap(raw) -> float:
+    if raw is None or raw == "" or raw == "N/A":
+        return 0.0
+    if not isinstance(raw, str):
+        return 0.0
+    try:
+        return float(raw.replace("$", "").replace(",", ""))
+    except (ValueError, TypeError):
+        return 0.0
+
+
+def _parse_price(raw) -> float:
+    if raw is None or raw == "" or raw == "N/A":
+        return 0.0
+    if not isinstance(raw, str):
+        return 0.0
+    try:
+        return float(raw.replace("$", "").replace(",", ""))
+    except (ValueError, TypeError):
+        return 0.0
+
+
 def _try_fetch_nasdaq_api_with_prices() -> list[dict] | None:
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -59,20 +81,15 @@ def _try_fetch_nasdaq_api_with_prices() -> list[dict] | None:
             rows = data.get("data", {}).get("table", {}).get("rows", [])
             result = []
             for row in rows:
-                symbol = row.get("symbol", "").strip()
-                if not symbol:
+                symbol = row.get("symbol")
+                if not symbol or not isinstance(symbol, str) or not symbol.strip():
                     continue
+                symbol = symbol.strip()
                 if EXCLUDE_PATTERNS.search(symbol):
                     continue
-                try:
-                    lastsale = float(row.get("lastsale", "0").replace("$", "").replace(",", ""))
-                except (ValueError, TypeError):
-                    lastsale = 0.0
-                try:
-                    volume = int(row.get("volume", "0").replace(",", ""))
-                except (ValueError, TypeError):
-                    volume = 0
-                result.append({"symbol": symbol, "lastsale": lastsale, "volume": volume})
+                lastsale = _parse_price(row.get("lastsale"))
+                market_cap = _parse_market_cap(row.get("marketCap"))
+                result.append({"symbol": symbol, "lastsale": lastsale, "marketCap": market_cap})
             return result
         except Exception as e:
             logger.warning("NASDAQ API attempt %d/%d failed: %s", attempt, MAX_RETRIES, e)
@@ -108,19 +125,19 @@ def fetch_universe_with_prices() -> list[dict]:
     tickers = _try_fetch_nasdaq_txt()
     if tickers is not None:
         logger.warning("NASDAQ TXT has no price data — returning symbols only (prices=0)")
-        return [{"symbol": t, "lastsale": 0.0, "volume": 0} for t in tickers]
+        return [{"symbol": t, "lastsale": 0.0, "marketCap": 0.0} for t in tickers]
     cached = load_universe()
     if cached:
         logger.warning("All remote sources failed. Using cached universe.csv (%d tickers) without prices", len(cached))
-        return [{"symbol": t, "lastsale": 0.0, "volume": 0} for t in cached]
+        return [{"symbol": t, "lastsale": 0.0, "marketCap": 0.0} for t in cached]
     raise RuntimeError("All universe sources failed. No cached universe.csv found.")
 
 
-def filter_liquid(rows: list[dict], min_price: float = 10.0, min_volume: int = 300000, max_count: int = 500) -> list[str]:
-    passed = [r for r in rows if r["lastsale"] >= min_price and r["volume"] >= min_volume]
-    passed.sort(key=lambda r: r["volume"], reverse=True)
+def filter_liquid(rows: list[dict], min_price: float = 10.0, max_count: int = 500) -> list[str]:
+    passed = [r for r in rows if r["lastsale"] >= min_price]
+    passed.sort(key=lambda r: r.get("marketCap", 0), reverse=True)
     result = [r["symbol"] for r in passed[:max_count]]
-    logger.info("Liquidity filter: %d/%d passed (top %d by volume)", len(passed), len(rows), len(result))
+    logger.info("Liquidity filter: %d/%d passed price>=%s (top %d by market cap)", len(passed), len(rows), f"${min_price:.0f}", len(result))
     return result
 
 
