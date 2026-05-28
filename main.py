@@ -81,11 +81,19 @@ async def full_setup(context: ContextTypes.DEFAULT_TYPE = None, chat_id: int | N
         save_universe(tickers, UNIVERSE_PATH)
         logger.info("Universe: %d tickers saved", len(tickers))
     except Exception as e:
-        msg = f"❌ Failed to fetch universe: {e}"
-        logger.error(msg)
-        if progress_chat and bot:
-            await bot.send_message(chat_id=progress_chat, text=msg)
-        return
+        logger.warning("Remote universe fetch failed: %s", e)
+        existing = load_universe(UNIVERSE_PATH) if os.path.exists(UNIVERSE_PATH) else []
+        if existing:
+            tickers = existing
+            logger.info("Falling back to cached universe.csv (%d tickers)", len(tickers))
+            if progress_chat and bot:
+                await bot.send_message(chat_id=progress_chat, text=f"⚠️ NASDAQ unreachable. Using cached universe.csv ({len(tickers)} tickers). Run /setup again later to refresh.")
+        else:
+            msg = f"❌ Failed to fetch universe and no cached file found: {e}"
+            logger.error(msg)
+            if progress_chat and bot:
+                await bot.send_message(chat_id=progress_chat, text=msg)
+            return
 
     if progress_chat and bot:
         await bot.send_message(chat_id=progress_chat, text=f"📥 Downloading 1-year data for {len(tickers)} stocks... This takes ~10-15 min.")
