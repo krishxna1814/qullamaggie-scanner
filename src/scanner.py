@@ -25,14 +25,16 @@ class Scanner:
 
         self._candidates.sort(key=lambda r: r["total_return"], reverse=True)
         keep = max(1, int(len(self._candidates) * top_pct / 100))
-        results = self._candidates[:keep]
+        top = self._candidates[:keep]
 
-        for r in results:
-            r["rank"] = results.index(r) + 1
+        results = [r for r in top if r["avg_volume"] >= 1_000_000 and r["adr"] >= 3.0]
+
+        for i, r in enumerate(results):
+            r["rank"] = i + 1
 
         elapsed = time.perf_counter() - start
-        logger.info("Scan done in %.2f sec — %d candidates, kept top %d (%.1f%%)",
-                     elapsed, len(self._candidates), len(results), top_pct)
+        logger.info("Scan done in %.2f sec — %d candidates, top %d by return, %d passed filters",
+                     elapsed, len(self._candidates), keep, len(results))
         return results
 
     def _evaluate(self, ticker: str, df: pd.DataFrame) -> dict | None:
@@ -50,17 +52,11 @@ class Scanner:
         except (IndexError, ValueError):
             return None
 
-        avg_volume = int(np.mean(volume))
-        if avg_volume < 1_000_000:
-            return None
-
-        daily_ranges = (high - low) / close
-        adr = float(np.mean(daily_ranges))
-        if adr < 0.03:
-            return None
-
         first_close = float(close[0])
         total_return = (latest_close - first_close) / first_close
+        avg_volume = int(np.mean(volume))
+        daily_ranges = (high - low) / close
+        adr = float(np.mean(daily_ranges))
 
         return {
             "ticker": ticker,
