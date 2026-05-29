@@ -15,6 +15,16 @@ def _chart_url(ticker: str) -> str:
     return f"https://finviz.com/chart.ashx?t={ticker}&ty=c&ta=1&p=d&s=l"
 
 
+def _fmt_vol(vol: int) -> str:
+    if vol >= 1_000_000_000:
+        return f"{vol/1_000_000_000:.1f}B"
+    if vol >= 1_000_000:
+        return f"{vol/1_000_000:.1f}M"
+    if vol >= 1_000:
+        return f"{vol/1_000:.1f}K"
+    return str(vol)
+
+
 class TelegramAlerter:
     def __init__(self, token: str = TELEGRAM_TOKEN, chat_id: str = CHAT_ID):
         self.token = token
@@ -40,10 +50,41 @@ class TelegramAlerter:
                 all_ok = False
         return all_ok
 
+    def _send_chart(self, ticker: str, caption: str) -> bool:
+        if not self.enabled:
+            return False
+        chart_url = _chart_url(ticker)
+        all_ok = True
+        for cid in self.chat_ids:
+            try:
+                resp = requests.post(
+                    f"{self.base_url}/sendPhoto",
+                    json={
+                        "chat_id": cid,
+                        "photo": chart_url,
+                        "caption": caption,
+                        "parse_mode": "Markdown",
+                    },
+                    timeout=20,
+                )
+                resp.raise_for_status()
+            except Exception as e:
+                logger.warning("Telegram sendPhoto to %s failed: %s", cid, e)
+                all_ok = False
+        return all_ok
+
     def send_breakout(self, result: dict) -> bool:
         ticker = result["ticker"]
         period = result.get("period", "")
         period_tag = f" [{period}]" if period else ""
+        caption = (
+            f"#{result['rank']} {ticker}{period_tag}\n"
+            f"💵 ${result['price']} | 📈 +{result['total_return']}%\n"
+            f"📊 ADR: {result['adr']}% | RSI: {result['rsi']}\n"
+            f"📊 Vol: {_fmt_vol(result['avg_volume'])}"
+        )
+        if self._send_chart(ticker, caption):
+            return True
         msg = (
             f"━━━━━━━━━━━━━━━━━━━\n"
             f"🚀 #{result['rank']} {ticker}{period_tag}\n"
@@ -51,7 +92,8 @@ class TelegramAlerter:
             f"💰 Price      : ${result['price']}\n"
             f"📊 Return     : {result['total_return']}%\n"
             f"📈 ADR        : {result['adr']}%\n"
-            f"📊 avg Vol    : {result['avg_volume']:,}\n"
+            f"📊 Avg Vol    : {result['avg_volume']:,}\n"
+            f"📊 RSI        : {result['rsi']}\n"
             f"📈 [Chart]({_chart_url(ticker)})\n"
             f"━━━━━━━━━━━━━━━━━━━"
         )
@@ -60,13 +102,12 @@ class TelegramAlerter:
     def send_summary(self, results: list[dict], period: str = "") -> bool:
         if not results:
             return self._send(f"📭 No stocks passed filters{period}.")
-        label = f" ({period})" if period else ""
-        lines = [f"🎯 **TOP GAINERS{label}**\n"]
+        label = f" [{period}]" if period else ""
+        lines = [f"🎯 **TOP GAINERS{label}** — {len(results)} stocks\n"]
         for r in results:
             lines.append(
-                f"#{r['rank']} {r['ticker']:5} | +{r['total_return']}% | "
-                f"ADR {r['adr']}% | Vol {r['avg_volume']:,}\n"
-                f"[📈 Chart]({_chart_url(r['ticker'])})\n"
+                f"#{r['rank']:2} {r['ticker']:5} 📈+{r['total_return']}%  "
+                f"ADR {r['adr']}%  Vol {_fmt_vol(r['avg_volume'])}"
             )
         msg = "\n".join(lines)
         if len(msg) > 4000:
