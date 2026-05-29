@@ -27,7 +27,7 @@ class Scanner:
         keep = max(1, int(len(self._candidates) * top_pct / 100))
         top = self._candidates[:keep]
 
-        results = [r for r in top if r["avg_volume"] >= 1_000_000 and r["adr"] >= 3.0]
+        results = [r for r in top if r["avg_volume"] >= 1_000_000 and r["adr"] >= 3.0 and r["rsi"] > 50]
 
         for i, r in enumerate(results):
             r["rank"] = i + 1
@@ -57,6 +57,7 @@ class Scanner:
         avg_volume = int(np.mean(volume))
         daily_ranges = (high - low) / close
         adr = float(np.mean(daily_ranges))
+        rsi = self._rsi(close)
 
         return {
             "ticker": ticker,
@@ -64,6 +65,7 @@ class Scanner:
             "avg_volume": avg_volume,
             "adr": round(adr * 100, 2),
             "total_return": round(total_return * 100, 2),
+            "rsi": round(rsi, 1),
         }
 
     @staticmethod
@@ -80,7 +82,22 @@ class Scanner:
             f"💰 Price      : ${r['price']}\n"
             f"📊 Avg Vol    : {r['avg_volume']:,}\n"
             f"📈 ADR        : {r['adr']}%\n"
+            f"📈 RSI        : {r['rsi']}\n"
             f"📈 Return     : {r['total_return']}%\n"
             f"━━━━━━━━━━━━━━━━━━━"
         )
         return msg
+
+    @staticmethod
+    def _rsi(values, period=14):
+        if len(values) < period + 1:
+            return 50.0
+        deltas = np.diff(values)
+        gains = np.where(deltas > 0, deltas, 0)
+        losses = np.where(deltas < 0, -deltas, 0)
+        avg_gain = np.mean(gains[-period:])
+        avg_loss = np.mean(losses[-period:])
+        if avg_loss == 0:
+            return 100.0
+        rs = avg_gain / avg_loss
+        return 100.0 - (100.0 / (1.0 + rs))
