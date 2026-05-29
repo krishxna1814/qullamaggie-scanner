@@ -42,9 +42,11 @@ class TelegramAlerter:
 
     def send_breakout(self, result: dict) -> bool:
         ticker = result["ticker"]
+        period = result.get("period", "")
+        period_tag = f" [{period}]" if period else ""
         msg = (
             f"━━━━━━━━━━━━━━━━━━━\n"
-            f"🚀 #{result['rank']} {ticker}\n"
+            f"🚀 #{result['rank']} {ticker}{period_tag}\n"
             f"━━━━━━━━━━━━━━━━━━━\n"
             f"💰 Price      : ${result['price']}\n"
             f"📊 Return     : {result['total_return']}%\n"

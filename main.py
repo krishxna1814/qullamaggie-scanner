@@ -26,6 +26,8 @@ SCAN_CONFIGS = {
     "6mo": {"period": "6mo", "top_pct": 3.0},
 }
 
+TRADING_DAYS = {"1mo": 21, "3mo": 63, "6mo": 126}
+
 
 def save_results(results: list[dict], prefix: str = "scan"):
     os.makedirs(RESULTS_DIR, exist_ok=True)
@@ -82,6 +84,41 @@ def cmd_scan(label: str):
     logger.info("Total time: %.1f seconds", elapsed)
 
 
+def cmd_scan_all():
+    overall_start = time.perf_counter()
+    alert.send_status("✅ Scanner started — ALL periods (1mo, 3mo, 6mo)")
+
+    targets = _get_targets()
+    logger.info("Targets: %d stocks", len(targets))
+
+    fetcher = SmartFetcher(chunk_size=50)
+    data = fetcher.fetch_by_period(targets, "6mo")
+    if not data:
+        alert.send_status("❌ No data fetched.")
+        return
+
+    for label in ["1mo", "3mo", "6mo"]:
+        days = TRADING_DAYS[label]
+        sliced = {}
+        for ticker, df in data.items():
+            if df is not None and len(df) >= days:
+                sliced[ticker] = df.tail(days).reset_index(drop=True)
+
+        scanner = Scanner(sliced)
+        results = scanner.scan(top_pct=3.0)
+        for r in results:
+            r["period"] = label
+        save_results(results, label)
+
+        alert.send_summary(results, label)
+        if results:
+            for r in results:
+                alert.send_breakout(r)
+
+    elapsed = time.perf_counter() - overall_start
+    logger.info("Total time: %.1f seconds", elapsed)
+
+
 def cmd_check(ticker: str):
     alert.send_status(f"🔍 Checking {ticker.upper()}...")
     fetcher = SmartFetcher()
@@ -104,6 +141,7 @@ def cmd_status():
 
 def main():
     parser = argparse.ArgumentParser(description="Stock Top Gainers Scanner")
+    parser.add_argument("--scan-all", action="store_true", help="Top gainers (all periods: 1mo, 3mo, 6mo)")
     parser.add_argument("--scan-1mo", action="store_true", help="Top gainers (1 month)")
     parser.add_argument("--scan-3mo", action="store_true", help="Top gainers (3 months)")
     parser.add_argument("--scan-6mo", action="store_true", help="Top gainers (6 months)")
@@ -116,7 +154,9 @@ def main():
         sys.exit(1)
 
     try:
-        if args.scan_1mo:
+        if args.scan_all:
+            cmd_scan_all()
+        elif args.scan_1mo:
             cmd_scan("1mo")
         elif args.scan_3mo:
             cmd_scan("3mo")
