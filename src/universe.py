@@ -9,6 +9,7 @@ import requests
 UNIVERSE_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "universe.csv")
 NASDAQ_URL = "https://www.nasdaqtrader.com/dynamic/SymDir/nasdaqtraded.txt"
 NASDAQ_API_URL = "https://api.nasdaq.com/api/screener/stocks?tableonly=true&limit=10000&offset=0"
+NYSE_API_URL = "https://api.nasdaq.com/api/screener/stocks?exchange=nyse&tableonly=true&limit=10000&offset=0"
 EXCLUDE_PATTERNS = re.compile(r"(warrant|unit|right|preferred|notes)", re.IGNORECASE)
 MAX_RETRIES = 3
 TIMEOUT = 60
@@ -68,14 +69,14 @@ def _parse_price(raw) -> float:
         return 0.0
 
 
-def _try_fetch_nasdaq_api_with_prices() -> list[dict] | None:
+def _try_fetch_exchange_api_with_prices(url: str = NASDAQ_API_URL, label: str = "NASDAQ") -> list[dict] | None:
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
         "Accept": "application/json",
     }
     for attempt in range(1, MAX_RETRIES + 1):
         try:
-            resp = requests.get(NASDAQ_API_URL, timeout=TIMEOUT, headers=headers)
+            resp = requests.get(url, timeout=TIMEOUT, headers=headers)
             resp.raise_for_status()
             data = resp.json()
             rows = data.get("data", {}).get("table", {}).get("rows", [])
@@ -90,9 +91,10 @@ def _try_fetch_nasdaq_api_with_prices() -> list[dict] | None:
                 lastsale = _parse_price(row.get("lastsale"))
                 market_cap = _parse_market_cap(row.get("marketCap"))
                 result.append({"symbol": symbol, "lastsale": lastsale, "marketCap": market_cap})
+            logger.info("%s API: %d tickers with prices fetched", label, len(result))
             return result
         except Exception as e:
-            logger.warning("NASDAQ API attempt %d/%d failed: %s", attempt, MAX_RETRIES, e)
+            logger.warning("%s API attempt %d/%d failed: %s", label, attempt, MAX_RETRIES, e)
             if attempt < MAX_RETRIES:
                 time.sleep(2 ** attempt)
     return None
@@ -104,7 +106,7 @@ def fetch_universe() -> list[str]:
         logger.info("NASDAQ TXT: %d tickers fetched", len(result))
         return result
     logger.info("NASDAQ TXT failed, trying NASDAQ API...")
-    rows = _try_fetch_nasdaq_api_with_prices()
+    rows = _try_fetch_exchange_api_with_prices()
     if rows is not None:
         tickers = sorted(set(r["symbol"] for r in rows))
         logger.info("NASDAQ API: %d tickers fetched", len(tickers))
@@ -117,14 +119,27 @@ def fetch_universe() -> list[str]:
 
 
 def fetch_universe_with_prices() -> list[dict]:
-    rows = _try_fetch_nasdaq_api_with_prices()
-    if rows is not None:
-        logger.info("NASDAQ API: %d tickers with prices fetched", len(rows))
-        return rows
-    logger.info("NASDAQ API failed, trying TXT fallback...")
+    all_rows = []
+    for url, label in [(NASDAQ_API_URL, "NASDAQ"), (NYSE_API_URL, "NYSE")]:
+        rows = _try_fetch_exchange_api_with_prices(url, label)
+        if rows:
+            all_rows.extend(rows)
+
+    if all_rows:
+        seen = set()
+        deduped = []
+        for r in all_rows:
+            s = r["symbol"]
+            if s not in seen:
+                seen.add(s)
+                deduped.append(r)
+        logger.info("Combined universe: %d unique tickers (NASDAQ+NYSE)", len(deduped))
+        return deduped
+
+    logger.info("Exchange APIs failed, trying TXT fallback (covers all exchanges)...")
     tickers = _try_fetch_nasdaq_txt()
     if tickers is not None:
-        logger.warning("NASDAQ TXT has no price data — returning symbols only (prices=0)")
+        logger.warning("TXT fallback has no price data — returning symbols only (prices=0)")
         return [{"symbol": t, "lastsale": 0.0, "marketCap": 0.0} for t in tickers]
     cached = load_universe()
     if cached:
