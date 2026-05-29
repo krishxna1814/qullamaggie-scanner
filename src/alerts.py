@@ -54,17 +54,22 @@ class TelegramAlerter:
         if not self.enabled:
             return False
         chart_url = _chart_url(ticker)
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+            "Referer": "https://finviz.com/",
+        }
+        try:
+            img = requests.get(chart_url, headers=headers, timeout=15).content
+        except Exception as e:
+            logger.warning("Chart download failed for %s: %s", ticker, e)
+            return False
         all_ok = True
         for cid in self.chat_ids:
             try:
                 resp = requests.post(
                     f"{self.base_url}/sendPhoto",
-                    json={
-                        "chat_id": cid,
-                        "photo": chart_url,
-                        "caption": caption,
-                        "parse_mode": "Markdown",
-                    },
+                    files={"photo": ("chart.png", img, "image/png")},
+                    data={"chat_id": cid, "caption": caption, "parse_mode": "Markdown"},
                     timeout=20,
                 )
                 resp.raise_for_status()
