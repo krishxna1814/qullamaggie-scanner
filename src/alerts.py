@@ -18,25 +18,27 @@ def _chart_url(ticker: str) -> str:
 class TelegramAlerter:
     def __init__(self, token: str = TELEGRAM_TOKEN, chat_id: str = CHAT_ID):
         self.token = token
-        self.chat_id = chat_id
+        self.chat_ids = [c.strip() for c in chat_id.split(",") if c.strip()] if chat_id else []
         self.base_url = f"https://api.telegram.org/bot{token}"
-        self.enabled = bool(token and chat_id)
+        self.enabled = bool(token and self.chat_ids)
 
     def _send(self, text: str) -> bool:
         if not self.enabled:
             logger.info("Telegram disabled (set TELEGRAM_TOKEN and CHAT_ID env vars)")
             return False
-        try:
-            resp = requests.post(
-                f"{self.base_url}/sendMessage",
-                json={"chat_id": self.chat_id, "text": text, "parse_mode": "Markdown"},
-                timeout=15,
-            )
-            resp.raise_for_status()
-            return True
-        except Exception as e:
-            logger.warning("Telegram send failed: %s", e)
-            return False
+        all_ok = True
+        for cid in self.chat_ids:
+            try:
+                resp = requests.post(
+                    f"{self.base_url}/sendMessage",
+                    json={"chat_id": cid, "text": text, "parse_mode": "Markdown"},
+                    timeout=15,
+                )
+                resp.raise_for_status()
+            except Exception as e:
+                logger.warning("Telegram send to %s failed: %s", cid, e)
+                all_ok = False
+        return all_ok
 
     def send_breakout(self, result: dict) -> bool:
         ticker = result["ticker"]
