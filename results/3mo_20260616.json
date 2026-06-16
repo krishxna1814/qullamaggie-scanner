@@ -1,0 +1,96 @@
+{
+  "timestamp": "2026-06-16 01:35 AM EST",
+  "count": 9,
+  "results": [
+    {
+      "ticker": "TSM",
+      "price": 441.4,
+      "avg_volume": 13485920,
+      "adr": 3.27,
+      "total_return": 27.88,
+      "rsi": 59.4,
+      "rank": 1,
+      "period": "3mo"
+    },
+    {
+      "ticker": "ASML",
+      "price": 1892.66,
+      "avg_volume": 1830169,
+      "adr": 3.49,
+      "total_return": 36.54,
+      "rsi": 68.1,
+      "rank": 2,
+      "period": "3mo"
+    },
+    {
+      "ticker": "KLAC",
+      "price": 256.42,
+      "avg_volume": 10394003,
+      "adr": 4.38,
+      "total_return": 73.32,
+      "rsi": 74.2,
+      "rank": 3,
+      "period": "3mo"
+    },
+    {
+      "ticker": "PANW",
+      "price": 284.54,
+      "avg_volume": 8396019,
+      "adr": 4.35,
+      "total_return": 68.18,
+      "rsi": 61.2,
+      "rank": 4,
+      "period": "3mo"
+    },
+    {
+      "ticker": "APP",
+      "price": 520.86,
+      "avg_volume": 4648703,
+      "adr": 6.03,
+      "total_return": 13.45,
+      "rsi": 51.1,
+      "rank": 5,
+      "period": "3mo"
+    },
+    {
+      "ticker": "DELL",
+      "price": 409.07,
+      "avg_volume": 9070382,
+      "adr": 5.48,
+      "total_return": 168.18,
+      "rsi": 66.7,
+      "rank": 6,
+      "period": "3mo"
+    },
+    {
+      "ticker": "SCCO",
+      "price": 193.22,
+      "avg_volume": 1503493,
+      "adr": 4.02,
+      "total_return": 10.82,
+      "rsi": 51.8,
+      "rank": 7,
+      "period": "3mo"
+    },
+    {
+      "ticker": "ANET",
+      "price": 169.09,
+      "avg_volume": 9119866,
+      "adr": 4.31,
+      "total_return": 27.07,
+      "rsi": 57.9,
+      "rank": 8,
+      "period": "3mo"
+    },
+    {
+      "ticker": "CRWD",
+      "price": 692.91,
+      "avg_volume": 3523576,
+      "adr": 4.51,
+      "total_return": 59.95,
+      "rsi": 52.9,
+      "rank": 9,
+      "period": "3mo"
+    }
+  ]
+}

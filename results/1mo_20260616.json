@@ -1,0 +1,106 @@
+{
+  "timestamp": "2026-06-16 01:34 AM EST",
+  "count": 10,
+  "results": [
+    {
+      "ticker": "TSM",
+      "price": 441.4,
+      "avg_volume": 12349257,
+      "adr": 3.5,
+      "total_return": 9.42,
+      "rsi": 59.4,
+      "rank": 1,
+      "period": "1mo"
+    },
+    {
+      "ticker": "ASML",
+      "price": 1892.66,
+      "avg_volume": 1889704,
+      "adr": 3.91,
+      "total_return": 26.03,
+      "rsi": 68.1,
+      "rank": 2,
+      "period": "1mo"
+    },
+    {
+      "ticker": "KLAC",
+      "price": 256.42,
+      "avg_volume": 11493342,
+      "adr": 5.51,
+      "total_return": 42.3,
+      "rsi": 74.2,
+      "rank": 3,
+      "period": "1mo"
+    },
+    {
+      "ticker": "PANW",
+      "price": 284.54,
+      "avg_volume": 9569380,
+      "adr": 4.95,
+      "total_return": 17.18,
+      "rsi": 61.2,
+      "rank": 4,
+      "period": "1mo"
+    },
+    {
+      "ticker": "RYAN",
+      "price": 35.34,
+      "avg_volume": 2475547,
+      "adr": 4.6,
+      "total_return": 11.1,
+      "rsi": 62.4,
+      "rank": 5,
+      "period": "1mo"
+    },
+    {
+      "ticker": "APP",
+      "price": 520.86,
+      "avg_volume": 4865414,
+      "adr": 6.25,
+      "total_return": 3.96,
+      "rsi": 51.1,
+      "rank": 6,
+      "period": "1mo"
+    },
+    {
+      "ticker": "DELL",
+      "price": 409.07,
+      "avg_volume": 11877128,
+      "adr": 6.62,
+      "total_return": 69.04,
+      "rsi": 66.7,
+      "rank": 7,
+      "period": "1mo"
+    },
+    {
+      "ticker": "SCCO",
+      "price": 193.22,
+      "avg_volume": 1332866,
+      "adr": 4.36,
+      "total_return": 9.3,
+      "rsi": 51.8,
+      "rank": 8,
+      "period": "1mo"
+    },
+    {
+      "ticker": "ANET",
+      "price": 169.09,
+      "avg_volume": 8896466,
+      "adr": 4.5,
+      "total_return": 19.1,
+      "rsi": 57.9,
+      "rank": 9,
+      "period": "1mo"
+    },
+    {
+      "ticker": "CRWD",
+      "price": 692.91,
+      "avg_volume": 3813090,
+      "adr": 5.12,
+      "total_return": 16.64,
+      "rsi": 52.9,
+      "rank": 10,
+      "period": "1mo"
+    }
+  ]
+}
