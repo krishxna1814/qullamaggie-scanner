@@ -8,6 +8,7 @@ import yfinance as yf
 CHUNK_SIZE = 50
 SLEEP_BETWEEN_CHUNKS = 2
 YF_TIMEOUT = 30
+MIN_DATA_POINTS = 3  # Reduced from 5 to support shorter periods like 6mo
 
 logger = logging.getLogger(__name__)
 
@@ -31,8 +32,9 @@ def _yf_download_with_timeout(tickers, period, interval, timeout=YF_TIMEOUT):
 
 
 class SmartFetcher:
-    def __init__(self, chunk_size: int = CHUNK_SIZE):
+    def __init__(self, chunk_size: int = CHUNK_SIZE, min_data_points: int = MIN_DATA_POINTS):
         self.chunk_size = chunk_size
+        self.min_data_points = min_data_points
 
     def fetch_by_period(self, tickers: list[str], period: str) -> dict[str, pd.DataFrame]:
         logger.info("Fetch: %d tickers, %s data", len(tickers), period)
@@ -61,7 +63,7 @@ class SmartFetcher:
             return result
         if not isinstance(data.columns, pd.MultiIndex):
             tdf = data.dropna(how="all")
-            if not tdf.empty and len(tdf) >= 5:
+            if not tdf.empty and len(tdf) >= self.min_data_points:
                 tdf.columns = [str(c).lower() for c in tdf.columns]
                 result["UNKNOWN"] = tdf
             return result
@@ -80,7 +82,8 @@ class SmartFetcher:
                 continue
             try:
                 tdf = data.xs(t, axis=1, level=ticker_lvl).dropna(how="all")
-                if tdf.empty or len(tdf) < 5:
+                if tdf.empty or len(tdf) < self.min_data_points:
+                    logger.debug(f"Insufficient data points for {t}: {len(tdf)} rows (min required: {self.min_data_points})")
                     continue
                 tdf.columns = [str(c).lower() for c in tdf.columns]
                 result[t.upper()] = tdf
