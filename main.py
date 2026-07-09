@@ -8,6 +8,7 @@ import time
 from src.universe import fetch_universe, fetch_universe_with_prices, filter_liquid, save_universe
 from src.fetcher import SmartFetcher
 from src.scanner import Scanner
+from src.sector_breakdown import SectorBreakdown
 from src.alerts import TelegramAlerter
 from src.utils import now_est, format_est
 
@@ -76,7 +77,12 @@ def cmd_scan(label: str):
 
     save_results(results, label)
     alert.send_summary(results, config["period"])
+    
+    # NEW: Send sector breakdown
     if results:
+        sector_report = SectorBreakdown.format_sector_breakdown(results, period=label)
+        alert.send_status(sector_report)
+        
         for r in results:
             alert.send_breakout(r)
 
@@ -111,7 +117,12 @@ def cmd_scan_all():
         save_results(results, label)
 
         alert.send_summary(results, label)
+        
+        # NEW: Send sector breakdown for each period
         if results:
+            sector_report = SectorBreakdown.format_sector_breakdown(results, period=label)
+            alert.send_status(sector_report)
+            
             for r in results:
                 alert.send_breakout(r)
 
