@@ -1,0 +1,636 @@
+{
+  "timestamp": "2026-07-08 09:35 PM EST",
+  "count": 63,
+  "results": [
+    {
+      "ticker": "RXT",
+      "price": 6.58,
+      "avg_volume": 23492305,
+      "adr": 16.71,
+      "total_return": 576.95,
+      "rsi": 52.9,
+      "rank": 1,
+      "period": "3mo"
+    },
+    {
+      "ticker": "SVC",
+      "price": 8.57,
+      "avg_volume": 10847229,
+      "adr": 5.6,
+      "total_return": 576.3,
+      "rsi": 97.8,
+      "rank": 2,
+      "period": "3mo"
+    },
+    {
+      "ticker": "OTLK",
+      "price": 1.69,
+      "avg_volume": 18886776,
+      "adr": 14.7,
+      "total_return": 576.0,
+      "rsi": 54.7,
+      "rank": 3,
+      "period": "3mo"
+    },
+    {
+      "ticker": "ABTC",
+      "price": 5.86,
+      "avg_volume": 15169468,
+      "adr": 8.31,
+      "total_return": 507.88,
+      "rsi": 73.1,
+      "rank": 4,
+      "period": "3mo"
+    },
+    {
+      "ticker": "AIIO",
+      "price": 3.96,
+      "avg_volume": 13186401,
+      "adr": 18.16,
+      "total_return": 376.53,
+      "rsi": 62.8,
+      "rank": 5,
+      "period": "3mo"
+    },
+    {
+      "ticker": "BLZE",
+      "price": 16.42,
+      "avg_volume": 3098460,
+      "adr": 7.5,
+      "total_return": 356.11,
+      "rsi": 88.4,
+      "rank": 6,
+      "period": "3mo"
+    },
+    {
+      "ticker": "MXL",
+      "price": 86.05,
+      "avg_volume": 5199286,
+      "adr": 11.43,
+      "total_return": 349.58,
+      "rsi": 50.7,
+      "rank": 7,
+      "period": "3mo"
+    },
+    {
+      "ticker": "BAND",
+      "price": 70.49,
+      "avg_volume": 1272142,
+      "adr": 8.16,
+      "total_return": 290.31,
+      "rsi": 82.4,
+      "rank": 8,
+      "period": "3mo"
+    },
+    {
+      "ticker": "EVC",
+      "price": 11.71,
+      "avg_volume": 2783315,
+      "adr": 7.47,
+      "total_return": 272.59,
+      "rsi": 68.9,
+      "rank": 9,
+      "period": "3mo"
+    },
+    {
+      "ticker": "ABSI",
+      "price": 11.1,
+      "avg_volume": 5963968,
+      "adr": 10.0,
+      "total_return": 271.24,
+      "rsi": 75.4,
+      "rank": 10,
+      "period": "3mo"
+    },
+    {
+      "ticker": "FIRY",
+      "price": 9.23,
+      "avg_volume": 1284374,
+      "adr": 14.22,
+      "total_return": 267.73,
+      "rsi": 58.9,
+      "rank": 11,
+      "period": "3mo"
+    },
+    {
+      "ticker": "PENG",
+      "price": 78.47,
+      "avg_volume": 3252555,
+      "adr": 9.24,
+      "total_return": 254.75,
+      "rsi": 62.2,
+      "rank": 12,
+      "period": "3mo"
+    },
+    {
+      "ticker": "FCEL",
+      "price": 22.54,
+      "avg_volume": 11285254,
+      "adr": 14.86,
+      "total_return": 251.64,
+      "rsi": 53.3,
+      "rank": 13,
+      "period": "3mo"
+    },
+    {
+      "ticker": "APPS",
+      "price": 10.5,
+      "avg_volume": 5689182,
+      "adr": 8.95,
+      "total_return": 239.81,
+      "rsi": 56.4,
+      "rank": 14,
+      "period": "3mo"
+    },
+    {
+      "ticker": "BB",
+      "price": 11.12,
+      "avg_volume": 33385953,
+      "adr": 7.94,
+      "total_return": 215.01,
+      "rsi": 63.3,
+      "rank": 15,
+      "period": "3mo"
+    },
+    {
+      "ticker": "ALAB",
+      "price": 393.16,
+      "avg_volume": 6303126,
+      "adr": 8.75,
+      "total_return": 213.37,
+      "rsi": 54.1,
+      "rank": 16,
+      "period": "3mo"
+    },
+    {
+      "ticker": "SLS",
+      "price": 13.76,
+      "avg_volume": 8970568,
+      "adr": 8.95,
+      "total_return": 183.13,
+      "rsi": 73.0,
+      "rank": 17,
+      "period": "3mo"
+    },
+    {
+      "ticker": "QURE",
+      "price": 43.49,
+      "avg_volume": 2215424,
+      "adr": 7.73,
+      "total_return": 173.69,
+      "rsi": 70.7,
+      "rank": 18,
+      "period": "3mo"
+    },
+    {
+      "ticker": "WYFI",
+      "price": 36.74,
+      "avg_volume": 1926305,
+      "adr": 11.91,
+      "total_return": 173.16,
+      "rsi": 51.2,
+      "rank": 19,
+      "period": "3mo"
+    },
+    {
+      "ticker": "UMC",
+      "price": 24.73,
+      "avg_volume": 16714294,
+      "adr": 4.38,
+      "total_return": 165.73,
+      "rsi": 58.7,
+      "rank": 20,
+      "period": "3mo"
+    },
+    {
+      "ticker": "SIMO",
+      "price": 313.3,
+      "avg_volume": 1048180,
+      "adr": 7.31,
+      "total_return": 157.86,
+      "rsi": 57.0,
+      "rank": 21,
+      "period": "3mo"
+    },
+    {
+      "ticker": "HPP",
+      "price": 15.33,
+      "avg_volume": 1222779,
+      "adr": 6.53,
+      "total_return": 155.07,
+      "rsi": 54.7,
+      "rank": 22,
+      "period": "3mo"
+    },
+    {
+      "ticker": "FATE",
+      "price": 2.93,
+      "avg_volume": 3833137,
+      "adr": 10.51,
+      "total_return": 148.31,
+      "rsi": 75.9,
+      "rank": 23,
+      "period": "3mo"
+    },
+    {
+      "ticker": "CMPS",
+      "price": 13.97,
+      "avg_volume": 4685596,
+      "adr": 7.83,
+      "total_return": 144.14,
+      "rsi": 66.0,
+      "rank": 24,
+      "period": "3mo"
+    },
+    {
+      "ticker": "EXFY",
+      "price": 1.88,
+      "avg_volume": 1269906,
+      "adr": 6.57,
+      "total_return": 135.59,
+      "rsi": 68.5,
+      "rank": 25,
+      "period": "3mo"
+    },
+    {
+      "ticker": "CRDO",
+      "price": 258.69,
+      "avg_volume": 8691791,
+      "adr": 9.27,
+      "total_return": 134.72,
+      "rsi": 54.0,
+      "rank": 26,
+      "period": "3mo"
+    },
+    {
+      "ticker": "DELL",
+      "price": 431.97,
+      "avg_volume": 8726995,
+      "adr": 6.0,
+      "total_return": 133.63,
+      "rsi": 57.3,
+      "rank": 27,
+      "period": "3mo"
+    },
+    {
+      "ticker": "HNGE",
+      "price": 88.5,
+      "avg_volume": 1772340,
+      "adr": 5.12,
+      "total_return": 131.13,
+      "rsi": 88.3,
+      "rank": 28,
+      "period": "3mo"
+    },
+    {
+      "ticker": "NNBR",
+      "price": 3.47,
+      "avg_volume": 3074859,
+      "adr": 9.37,
+      "total_return": 128.29,
+      "rsi": 60.5,
+      "rank": 29,
+      "period": "3mo"
+    },
+    {
+      "ticker": "IFRX",
+      "price": 2.16,
+      "avg_volume": 2007941,
+      "adr": 10.97,
+      "total_return": 127.37,
+      "rsi": 72.6,
+      "rank": 30,
+      "period": "3mo"
+    },
+    {
+      "ticker": "DDOG",
+      "price": 261.09,
+      "avg_volume": 5840085,
+      "adr": 5.21,
+      "total_return": 124.11,
+      "rsi": 70.6,
+      "rank": 31,
+      "period": "3mo"
+    },
+    {
+      "ticker": "AMD",
+      "price": 517.41,
+      "avg_volume": 36671379,
+      "adr": 5.42,
+      "total_return": 123.19,
+      "rsi": 51.7,
+      "rank": 32,
+      "period": "3mo"
+    },
+    {
+      "ticker": "PSNL",
+      "price": 14.11,
+      "avg_volume": 2932749,
+      "adr": 8.69,
+      "total_return": 122.91,
+      "rsi": 81.0,
+      "rank": 33,
+      "period": "3mo"
+    },
+    {
+      "ticker": "LPRO",
+      "price": 3.14,
+      "avg_volume": 2460384,
+      "adr": 6.48,
+      "total_return": 122.7,
+      "rsi": 65.0,
+      "rank": 34,
+      "period": "3mo"
+    },
+    {
+      "ticker": "CORT",
+      "price": 92.94,
+      "avg_volume": 1093978,
+      "adr": 4.19,
+      "total_return": 121.97,
+      "rsi": 71.7,
+      "rank": 35,
+      "period": "3mo"
+    },
+    {
+      "ticker": "TENB",
+      "price": 39.53,
+      "avg_volume": 3704013,
+      "adr": 6.02,
+      "total_return": 120.47,
+      "rsi": 84.5,
+      "rank": 36,
+      "period": "3mo"
+    },
+    {
+      "ticker": "PTRN",
+      "price": 27.61,
+      "avg_volume": 1719388,
+      "adr": 5.23,
+      "total_return": 119.13,
+      "rsi": 88.9,
+      "rank": 37,
+      "period": "3mo"
+    },
+    {
+      "ticker": "EVH",
+      "price": 5.6,
+      "avg_volume": 2630949,
+      "adr": 8.04,
+      "total_return": 118.75,
+      "rsi": 67.2,
+      "rank": 38,
+      "period": "3mo"
+    },
+    {
+      "ticker": "DFTX",
+      "price": 45.32,
+      "avg_volume": 2856193,
+      "adr": 6.18,
+      "total_return": 115.6,
+      "rsi": 86.0,
+      "rank": 39,
+      "period": "3mo"
+    },
+    {
+      "ticker": "OUST",
+      "price": 43.41,
+      "avg_volume": 4667014,
+      "adr": 11.12,
+      "total_return": 114.26,
+      "rsi": 50.6,
+      "rank": 40,
+      "period": "3mo"
+    },
+    {
+      "ticker": "HCAT",
+      "price": 2.2,
+      "avg_volume": 1531677,
+      "adr": 9.28,
+      "total_return": 113.59,
+      "rsi": 76.3,
+      "rank": 41,
+      "period": "3mo"
+    },
+    {
+      "ticker": "GRPN",
+      "price": 25.53,
+      "avg_volume": 2060128,
+      "adr": 8.74,
+      "total_return": 113.28,
+      "rsi": 79.3,
+      "rank": 42,
+      "period": "3mo"
+    },
+    {
+      "ticker": "ACMR",
+      "price": 98.07,
+      "avg_volume": 1676810,
+      "adr": 7.97,
+      "total_return": 112.55,
+      "rsi": 53.5,
+      "rank": 43,
+      "period": "3mo"
+    },
+    {
+      "ticker": "OSCR",
+      "price": 30.81,
+      "avg_volume": 7504196,
+      "adr": 5.8,
+      "total_return": 110.45,
+      "rsi": 60.6,
+      "rank": 44,
+      "period": "3mo"
+    },
+    {
+      "ticker": "RPD",
+      "price": 11.48,
+      "avg_volume": 2319726,
+      "adr": 7.06,
+      "total_return": 109.11,
+      "rsi": 89.6,
+      "rank": 45,
+      "period": "3mo"
+    },
+    {
+      "ticker": "CRNX",
+      "price": 83.49,
+      "avg_volume": 2823166,
+      "adr": 4.42,
+      "total_return": 108.93,
+      "rsi": 96.3,
+      "rank": 46,
+      "period": "3mo"
+    },
+    {
+      "ticker": "LQDA",
+      "price": 79.47,
+      "avg_volume": 1870603,
+      "adr": 5.92,
+      "total_return": 108.09,
+      "rsi": 72.4,
+      "rank": 47,
+      "period": "3mo"
+    },
+    {
+      "ticker": "ABCL",
+      "price": 7.1,
+      "avg_volume": 7791826,
+      "adr": 8.36,
+      "total_return": 107.0,
+      "rsi": 69.0,
+      "rank": 48,
+      "period": "3mo"
+    },
+    {
+      "ticker": "PRCH",
+      "price": 14.85,
+      "avg_volume": 2059057,
+      "adr": 6.41,
+      "total_return": 106.82,
+      "rsi": 75.6,
+      "rank": 49,
+      "period": "3mo"
+    },
+    {
+      "ticker": "ALIT",
+      "price": 20.13,
+      "avg_volume": 1356222,
+      "adr": 11.77,
+      "total_return": 105.41,
+      "rsi": 80.1,
+      "rank": 50,
+      "period": "3mo"
+    },
+    {
+      "ticker": "HUM",
+      "price": 396.29,
+      "avg_volume": 1617497,
+      "adr": 3.71,
+      "total_return": 100.22,
+      "rsi": 67.0,
+      "rank": 51,
+      "period": "3mo"
+    },
+    {
+      "ticker": "STUB",
+      "price": 12.7,
+      "avg_volume": 6162681,
+      "adr": 6.09,
+      "total_return": 99.69,
+      "rsi": 61.7,
+      "rank": 52,
+      "period": "3mo"
+    },
+    {
+      "ticker": "CADL",
+      "price": 9.88,
+      "avg_volume": 2084071,
+      "adr": 7.13,
+      "total_return": 99.6,
+      "rsi": 77.5,
+      "rank": 53,
+      "period": "3mo"
+    },
+    {
+      "ticker": "FROG",
+      "price": 92.73,
+      "avg_volume": 3022745,
+      "adr": 5.78,
+      "total_return": 98.74,
+      "rsi": 68.7,
+      "rank": 54,
+      "period": "3mo"
+    },
+    {
+      "ticker": "VRNS",
+      "price": 45.07,
+      "avg_volume": 2461133,
+      "adr": 5.51,
+      "total_return": 97.59,
+      "rsi": 85.1,
+      "rank": 55,
+      "period": "3mo"
+    },
+    {
+      "ticker": "NAVN",
+      "price": 25.52,
+      "avg_volume": 4193071,
+      "adr": 6.63,
+      "total_return": 97.22,
+      "rsi": 74.5,
+      "rank": 56,
+      "period": "3mo"
+    },
+    {
+      "ticker": "RVMD",
+      "price": 189.77,
+      "avg_volume": 3516238,
+      "adr": 4.33,
+      "total_return": 96.14,
+      "rsi": 86.7,
+      "rank": 57,
+      "period": "3mo"
+    },
+    {
+      "ticker": "OKTA",
+      "price": 146.77,
+      "avg_volume": 4041247,
+      "adr": 5.05,
+      "total_return": 93.02,
+      "rsi": 84.4,
+      "rank": 58,
+      "period": "3mo"
+    },
+    {
+      "ticker": "CLYM",
+      "price": 13.57,
+      "avg_volume": 1159363,
+      "adr": 8.12,
+      "total_return": 91.13,
+      "rsi": 82.1,
+      "rank": 59,
+      "period": "3mo"
+    },
+    {
+      "ticker": "ACHV",
+      "price": 6.21,
+      "avg_volume": 1993374,
+      "adr": 8.13,
+      "total_return": 90.49,
+      "rsi": 60.6,
+      "rank": 60,
+      "period": "3mo"
+    },
+    {
+      "ticker": "REPL",
+      "price": 11.12,
+      "avg_volume": 7804342,
+      "adr": 12.99,
+      "total_return": 88.95,
+      "rsi": 73.2,
+      "rank": 61,
+      "period": "3mo"
+    },
+    {
+      "ticker": "ULCC",
+      "price": 7.16,
+      "avg_volume": 5379565,
+      "adr": 7.19,
+      "total_return": 88.92,
+      "rsi": 58.4,
+      "rank": 62,
+      "period": "3mo"
+    },
+    {
+      "ticker": "FTNT",
+      "price": 156.71,
+      "avg_volume": 6424803,
+      "adr": 3.84,
+      "total_return": 87.65,
+      "rsi": 61.8,
+      "rank": 63,
+      "period": "3mo"
+    }
+  ]
+}
